@@ -1,0 +1,9 @@
+name: image_classification.py
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      size: {type: int, default: 300}
+    command: "python image_classification.py {size} "
