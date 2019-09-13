@@ -1,4 +1,4 @@
-
+import sys
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os
@@ -55,88 +55,19 @@ NUM_CLASSES = 5
 
 # In[4]:
 
-df_train = pd.read_csv('../input/aptos2019-blindness-detection/train.csv')
-df_test = pd.read_csv('../input/aptos2019-blindness-detection/test.csv')
-
-
-# ### Visualising some sample pictures of different classes.
-
-# In[5]:
-
-def display_samples(df, columns=4, rows=3):
-    fig=plt.figure(figsize=(5*columns, 4*rows))
-
-    for i in range(columns*rows):
-        image_path = df.loc[i,'id_code']
-        image_id = df.loc[i,'diagnosis']
-        img = cv2.imread(f'../input/aptos2019-blindness-detection/train_images/{image_path}.png')
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        
-        fig.add_subplot(rows, columns, i+1)
-        plt.title(image_id)
-        plt.imshow(img)
-    
-    plt.tight_layout()
-
-#display_samples(df_train)
-
-
-# In[6]:
-
-
-
-train_2015 = "../input/retinopathy-train-2015/rescaled_train_896/rescaled_train_896/"
 train      = '../input/aptos2019-blindness-detection/train_images/'
 test       = '../input/aptos2019-blindness-detection/test_images/'
-test_2015 = "/kaggle/input/2015test34/2015test34/2015test34/"
 
-# old_train1 = pd.read_csv('../input/retinopathy-train-2015/rescaled_train_896/trainLabels.csv')
-train_csv  =pd.read_csv('../input/aptos2019-blindness-detection/train.csv')
-
-duplicatedlist1=np.array(['86b3a7929bec','a4012932e18d','a19507501b40','d51c2153d151'
-,'79ce83c07588','878a3a097436','c9f0dc2c8b43','bd5013540a13'
-,'92b0d27fc0ec','857002ed4e49','3e86335bc2fd','e135d7ba9a0e'
-,'84b79243e430','bd34a0639575','ec6f1797a25a','94372043d55b'
-,'d81b6ed83bc2','badb5ff8d3c7','a8582e346df0','c027e5482e8c'
-,'ca6842bfcbc9','a15652b22ab8','2c2aa057afc5','77a9538b8362'
-,'c05b7b4c22fe','65e51e18242b','cc12453ea915','e2c3b037413b'
-,'9f4132bd6ed6','1b862fb6f65d','bf7b4eae7ad0','c6a8f8f998a2'
-,'81914ceb4e74','d6b109c82067','65c958379680','dc3c0d8ee20b'
-,'c0e509786f7f','f9e1c439d4c8','3c53198519f7','98104c8c67eb'
-,'668a319c2d23','5a36cea278ae','3044022c6969','ff0740cb484a'
-,'ea05c22d92e9','1f07dae3cadb','f920ccd926db','f6f3ea0d2693'
-,'c2d2b4f536da','9a94e0316ee3','e4e343eaae2a','a3b2e93d058b'
-,'c1c8550508e0','ff52392372d3','cac40227d3b2','36ec36c301c1'
-,'e1fb532f55df','2b21d293fdf2','81b0a2651c45','d567a1a22d33'
-,'fea14b3d44b0','6b00cb764237','d801c0a66738','595446774178'
-,'ea9e0fb6fb0b','91cbe1c775ef','d1cad012a254','8a759f94613a'
-,'7bf981d9c7fe','b10fca20c885','98e8adcf085c','cd4e7f9fa1a9'
-,'8acffaf1f4b9','e7a7187066ad','b376def52ccc','3ca637fddd56'
-,'91b6ebaa3678','a56230242a95','c8d2d32f7f29','6cb98da77e3e'
-,'e037643244b7','be161517d3ac','da0a1043abf7','33105f9b3a04'
-,'ee2c2a5f7d0e','eadc57064154','8d7bb0649a02','d144144a2f3f'
-,'c68dfa021d62','d994203deb64','63a03880939c','e76a9cbb2a8c'
-,'ba2624883599','59bd19c1c5bb','f4d3777f2710','9c52b87d01f1'
-,'ed3a0fc5b546','19e350c7c83c','a47432cd41e7','b8ebedd382de'
-,'f9ecf1795804','576e189d23d4','1e143fa3de57','ca25745942b0'
-,'435d900fa7b2','94b1d8ad35ec','df4913ca3712','86baef833ae0'
-,'38fe9f854046','a7b0d0c51731'])
-
-for id_code in duplicatedlist1:
-    train_csv=train_csv[train_csv['id_code']!=id_code]
-    
+train_csv  =pd.read_csv('../input/aptos2019-blindness-detection/train.csv') 
 
 def expand_path(p):
     p = str(p)
     if isfile(train + p + ".png"):
         return train + (p + ".png")
-    if isfile(train_2015 + p + '.png'):
-        return train_2015 + (p + ".png")
-    if isfile(test_2015 + p + '.jpeg'):
-        return test_2015 + (p + ".jpeg")
     if isfile(test + p + ".png"):
         return test + (p + ".png")
     return p
+	
 #The Code from: https://www.kaggle.com/ratthachat/aptos-updated-albumentation-meets-grad-cam
 
 def crop_image_from_gray2(img,tol=7,threth_h=80,threth_w=90,cut_h=6,cut_w=1):
@@ -362,26 +293,13 @@ class My_Generator(Sequence):
         return batch_images, batch_y
 
 
-# In[11]:
-
-get_ipython().system('ls /kaggle/input')
-
-
-# In[12]:
 
 def create_model(input_shape, n_out):
     input_tensor = Input(shape=input_shape)
     base_model = DenseNet121(include_top=False,
-                   weights=None,
+#                   weights=None,
                    input_tensor=input_tensor)
-    base_model.load_weights("../input/densenet-keras/DenseNet-BC-121-32-no-top.h5")
-#     x1 = GlobalAveragePooling2D()(base_model.output)
-#     x2 = GlobalMaxPooling2D()(base_model.output)
-# # to account for missing values from the attention model
-#     x = concatenate([x1,x2], axis=-1)
     x = GlobalAveragePooling2D()(base_model.output)
-    x = Dropout(0.5)(x)
-
     x = Dropout(0.5)(x)
     x = Dense(1024, activation='relu')(x)
     x = Dropout(0.5)(x)
@@ -540,7 +458,7 @@ model.fit_generator(
 qwk = QWKEvaluation(validation_data=(valid_generator, valid_y),
                     batch_size=batch_size, interval=1)
 # In[18]:
-mlflow.log_param("size", size)
+mlflow.log_param("size", SIZE)
 mlflow.log_metric("qwk", qwk)
 	
 mlflow.log_artifact("resnet.png")
